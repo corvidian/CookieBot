@@ -10,15 +10,22 @@ AutoPlay.delay=0;
 AutoPlay.night=false;
 AutoPlay.finished=false;
 
+AutoPlay.pauseBuildings = false;
+AutoPlay.pauseUpgrades = false;
+AutoPlay.disableNightMode = true;
+
+AutoPlay.interval = 300
+AutoPlay.clickInterval = 20
+
 AutoPlay.run = function () {
   AutoPlay.activities = AutoPlay.mainActivity;
-  if (Game.AscendTimer>0 || Game.ReincarnateTimer>0) return;
-  if (AutoPlay.delay>0) { AutoPlay.delay--; return; }
-  if (AutoPlay.nightMode()) { var age=Date.now()-Game.lumpT; AutoPlay.cheatSugarLumps(age); return; }
-  AutoPlay.handleClicking();
+  if (Game.AscendTimer > 0 || Game.ReincarnateTimer > 0) return;
+  if (AutoPlay.delay > 0) { AutoPlay.delay--; return; }
+  if (AutoPlay.nightMode()) { var age = Date.now() - Game.lumpT; AutoPlay.cheatSugarLumps(age); return; }
+  //AutoPlay.handleClicking();
   AutoPlay.handleGoldenCookies();
-  AutoPlay.handleBuildings();
-  AutoPlay.handleUpgrades();
+  if (!AutoPlay.pauseUpgrades) { AutoPlay.handleUpgrades();  } else { AutoPlay.addActivity("Upgrades disabled"); }
+  if (!AutoPlay.pauseBuildings) { AutoPlay.handleBuildings(); } else { AutoPlay.addActivity("Buildings disabled"); }
   AutoPlay.handleSeasons();
   AutoPlay.handleSugarLumps();
   AutoPlay.handleDragon();
@@ -28,43 +35,43 @@ AutoPlay.run = function () {
 }
 
 //===================== Night Mode ==========================
-AutoPlay.preNightMode = function() { var h=(new Date).getHours(); return(h>=22); }
+AutoPlay.preNightMode = function() { var h=(new Date).getHours(); return(AutoPlay.disableNightMode || h>=22); }
 
-AutoPlay.nightMode = function() { 
-  var h=(new Date).getHours();
-  if(h>=7 && h<23) { // be active
+AutoPlay.nightMode = function () {
+  var h = (new Date).getHours();
+  if (AutoPlay.disableNightMode ||  h >= 7 && h < 23) { // be active
     AutoPlay.addActivity('Daytime! The bot is working.');
     if (AutoPlay.night) AutoPlay.useLump();
-    AutoPlay.night=false;
-    var gs=Game.Upgrades["Golden switch [on]"]; if(gs.unlocked) {
+    AutoPlay.night = false;
+    var gs = Game.Upgrades["Golden switch [on]"]; if (gs.unlocked) {
       if (Game.isMinigameReady(Game.Objects["Temple"])) {
-        AutoPlay.removeSpirit(1,"asceticism");
-//        AutoPlay.assignSpirit(1,"decadence",0);
-//        AutoPlay.assignSpirit(2,"labor",0);
+        AutoPlay.removeSpirit(1, "asceticism");
+        //        AutoPlay.assignSpirit(1,"decadence",0);
+        //        AutoPlay.assignSpirit(2,"labor",0);
       }
-	  gs.buy();
-	}
-	AutoPlay.nightAtGarden(false);
+      gs.buy();
+    }
+    AutoPlay.nightAtGarden(false);
     return false;
   }
   if (AutoPlay.night) { AutoPlay.addActivity('The bot is sleeping.'); return true; } //really sleep now
   AutoPlay.addActivity('Preparing for the night.');
-  var gs=Game.Upgrades["Golden switch [off]"]; if(gs.unlocked) {
+  var gs = Game.Upgrades["Golden switch [off]"]; if (gs.unlocked) {
     AutoPlay.handleGoldenCookies();
-    var buffCount=0;
-    for (var i in Game.buffs) { if(Game.buffs[i].time>=0) buffCount++; }
-	if((buffCount==1 && Game.hasBuff("Clot")) || h<7) gs.buy();
-	if(!gs.bought) return true; // do not activate spirits before golden switch
+    var buffCount = 0;
+    for (var i in Game.buffs) { if (Game.buffs[i].time >= 0) buffCount++; }
+    if ((buffCount == 1 && Game.hasBuff("Clot")) || h < 7) gs.buy();
+    if (!gs.bought) return true; // do not activate spirits before golden switch
     if (Game.isMinigameReady(Game.Objects["Temple"])) {
 //	  AutoPlay.assignSpirit(0,"mother",1); 
-      AutoPlay.removeSpirit(1,"decadence");
-      AutoPlay.removeSpirit(2,"labor");
-      AutoPlay.assignSpirit(1,"asceticism",1);
-      AutoPlay.assignSpirit(2,"industry",1);
+      AutoPlay.removeSpirit(1, "decadence");
+      AutoPlay.removeSpirit(2, "labor");
+      AutoPlay.assignSpirit(1, "asceticism", 1);
+      AutoPlay.assignSpirit(2, "industry", 1);
     }
   }
   AutoPlay.nightAtGarden(true);
-  AutoPlay.night=true;
+  AutoPlay.night = true;
   return true;
 }
 
@@ -788,7 +795,8 @@ AutoPlay.addActivity = function(str) {
 
 AutoPlay.info("Pre-release for gardening."); 
 if (AutoPlay.autoPlayer) { AutoPlay.info("replacing old version of autoplay"); clearInterval(AutoPlay.autoPlayer); }
-AutoPlay.autoPlayer = setInterval(AutoPlay.run, 300); // was 100 before, but that is too quick
+AutoPlay.autoPlayer = setInterval(AutoPlay.run, AutoPlay.interval); // was 100 before, but that is too quick
+AutoPlay.autoClicker = setInterval(AutoPlay.handleClicking, AutoPlay.clickInterval);
 AutoPlay.findNextAchievement();
 l('versionNumber').innerHTML='v. '+Game.version+" (with autoplay v."+AutoPlay.version+")";
 l('versionNumber').innerHTML='v. '+Game.version+' <span '+Game.getDynamicTooltip('AutoPlay.whatTheBotIsDoing','this')+">(with autoplay v."+AutoPlay.version+")"+'</span>';
