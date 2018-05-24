@@ -95,7 +95,7 @@ AutoPlay.handleClicking = function() {
 //===================== Handle Upgrades ==========================
 AutoPlay.handleUpgrades = function() {
   if (!Game.Achievements["Hardcore"].won && Game.UpgradesOwned==0) return;
-  Game.UpgradesById.forEach(function(e) { if (e.unlocked && !e.bought && e.canBuy() && !AutoPlay.avoidbuy(e)) { e.buy(true); } });
+  Game.UpgradesById.forEach(function(e) { if (e.unlocked && !e.bought && e.canBuy() && !AutoPlay.avoidbuy(e)) { e.buy(true); console.log("Bought " + e.name) } });
 }
 
 AutoPlay.avoidbuy = function(up) { //normally we do not buy 227, 71, 73, rolling pins
@@ -111,27 +111,29 @@ AutoPlay.avoidbuy = function(up) { //normally we do not buy 227, 71, 73, rolling
 } }
 
 //===================== Handle Buildings ==========================
-AutoPlay.handleBuildings = function() {
-  var buyAmount=100, checkAmount=1;
-  if ((Date.now()-Game.startDate) > 10*60*1000) buyAmount=1; // buy single after 10 minutes
-  if (Game.resets && Game.ascensionMode!=1 && Game.isMinigameReady(Game.Objects["Temple"]) && Game.Objects["Temple"].minigame.slot[0]==10 // Rigidel is in slot 0
-      && Game.BuildingsOwned%10==0 && (Date.now()-Game.startDate) > 2*60*1000) // do not use factor 10 in the first 2 minutes after descend
-    buyAmount=checkAmount=10;
-  var cpc=0; // relative strength of cookie production
-  for(var i = Game.ObjectsById.length-1; i >= 0; i--){ var me = Game.ObjectsById[i]; var mycpc = me.storedCps / me.price; if (mycpc > cpc) { cpc = mycpc; } }; 
-  for(i = Game.ObjectsById.length-1; i >= 0; i--) { 
-    var me = Game.ObjectsById[i]; 
+AutoPlay.handleBuildings = function () {
+  var buyAmount = 100, checkAmount = 1;
+  if ((Date.now() - Game.startDate) > 10 * 60 * 1000) buyAmount = 1; // buy single after 10 minutes
+  if (Game.resets && Game.ascensionMode != 1 && Game.isMinigameReady(Game.Objects["Temple"]) && Game.Objects["Temple"].minigame.slot[0] == 10 // Rigidel is in slot 0
+    && Game.BuildingsOwned % 10 == 0 && (Date.now() - Game.startDate) > 2 * 60 * 1000) // do not use factor 10 in the first 2 minutes after descend
+    buyAmount = checkAmount = 10;
+  var cpc = 0; // relative strength of cookie production
+  for (var i = Game.ObjectsById.length - 1; i >= 0; i--) { var me = Game.ObjectsById[i]; var mycpc = me.storedCps / me.price; if (mycpc > cpc) { cpc = mycpc; } };
+  for (i = Game.ObjectsById.length - 1; i >= 0; i--) {
+    var me = Game.ObjectsById[i];
     if ((me.storedCps / me.price > cpc / 2 || me.amount % 50 >= 40) && (me.getSumPrice(checkAmount) < Game.cookies)) {
-      console.log("Buying " + me.name + " #" + me.bought+1 )
       me.buy(buyAmount);
+      console.log("Bought " + me.name + " #" + me.bought)
       return;
     }
   }
-  if(Game.resets && Game.ascensionMode!=1 && Game.isMinigameReady(Game.Objects["Temple"]) && Game.Objects["Temple"].minigame.slot[0]==10 && Game.BuildingsOwned%10!=0) { // Rigidel is in slot 0, buy the cheapest
-	var minIdx=0, minPrice=Game.ObjectsById[minIdx].price;
-    for(var i = Game.ObjectsById.length-1; i >= 0; i--){ if (Game.ObjectsById[i].price < minPrice) { minPrice=Game.ObjectsById[i].price; minIdx=i; } }; 
-	Game.ObjectsById[minIdx].buy();
-} }
+  if (Game.resets && Game.ascensionMode != 1 && Game.isMinigameReady(Game.Objects["Temple"]) && Game.Objects["Temple"].minigame.slot[0] == 10 && Game.BuildingsOwned % 10 != 0) { // Rigidel is in slot 0, buy the cheapest
+    var minIdx = 0, minPrice = Game.ObjectsById[minIdx].price;
+    for (var i = Game.ObjectsById.length - 1; i >= 0; i--) { if (Game.ObjectsById[i].price < minPrice) { minPrice = Game.ObjectsById[i].price; minIdx = i; } };
+    Game.ObjectsById[minIdx].buy();
+    console.log("Bought " + Game.ObjectsById[minIdx].name + " #" + Game.ObjectsById[minIdx].bought)
+  }
+}
 
 //===================== Handle Seasons ==========================
 AutoPlay.handleSeasons = function() {
