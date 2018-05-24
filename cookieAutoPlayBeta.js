@@ -121,7 +121,11 @@ AutoPlay.handleBuildings = function() {
   for(var i = Game.ObjectsById.length-1; i >= 0; i--){ var me = Game.ObjectsById[i]; var mycpc = me.storedCps / me.price; if (mycpc > cpc) { cpc = mycpc; } }; 
   for(i = Game.ObjectsById.length-1; i >= 0; i--) { 
     var me = Game.ObjectsById[i]; 
-    if ((me.storedCps/me.price > cpc/2 || me.amount % 50 >= 40) && (me.getSumPrice(checkAmount)<Game.cookies)) { me.buy(buyAmount); return; }
+    if ((me.storedCps / me.price > cpc / 2 || me.amount % 50 >= 40) && (me.getSumPrice(checkAmount) < Game.cookies)) {
+      console.log("Buying " + me.name + " #" + me.bought+1 )
+      me.buy(buyAmount);
+      return;
+    }
   }
   if(Game.resets && Game.ascensionMode!=1 && Game.isMinigameReady(Game.Objects["Temple"]) && Game.Objects["Temple"].minigame.slot[0]==10 && Game.BuildingsOwned%10!=0) { // Rigidel is in slot 0, buy the cheapest
 	var minIdx=0, minPrice=Game.ObjectsById[minIdx].price;
@@ -793,10 +797,15 @@ AutoPlay.addActivity = function(str) {
   AutoPlay.activities+= '<div class="line"></div>'+str;
 }
 
+AutoPlay.resetClicker = function() {
+  if(AutoPlay.autoClicker) { clearInterval(AutoPlay.autoClicker); }
+  AutoPlay.autoClicker = setInterval(AutoPlay.handleClicking, AutoPlay.clickInterval);
+}
+
 AutoPlay.info("Pre-release for gardening."); 
 if (AutoPlay.autoPlayer) { AutoPlay.info("replacing old version of autoplay"); clearInterval(AutoPlay.autoPlayer); }
 AutoPlay.autoPlayer = setInterval(AutoPlay.run, AutoPlay.interval); // was 100 before, but that is too quick
-AutoPlay.autoClicker = setInterval(AutoPlay.handleClicking, AutoPlay.clickInterval);
+AutoPlay.resetClicker();
 AutoPlay.findNextAchievement();
 l('versionNumber').innerHTML='v. '+Game.version+" (with autoplay v."+AutoPlay.version+")";
 l('versionNumber').innerHTML='v. '+Game.version+' <span '+Game.getDynamicTooltip('AutoPlay.whatTheBotIsDoing','this')+">(with autoplay v."+AutoPlay.version+")"+'</span>';
