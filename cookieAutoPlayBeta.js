@@ -35,7 +35,7 @@ AutoPlay.run = function () {
 }
 
 //===================== Night Mode ==========================
-AutoPlay.preNightMode = function() { var h=(new Date).getHours(); return(AutoPlay.disableNightMode || h>=22); }
+AutoPlay.preNightMode = function() { var h=(new Date).getHours(); return(!AutoPlay.disableNightMode && h>=22); }
 
 AutoPlay.nightMode = function () {
   var h = (new Date).getHours();
@@ -98,17 +98,22 @@ AutoPlay.handleUpgrades = function() {
   Game.UpgradesById.forEach(function(e) { if (e.unlocked && !e.bought && e.canBuy() && !AutoPlay.avoidbuy(e)) { e.buy(true); console.log("Bought " + e.name) } });
 }
 
-AutoPlay.avoidbuy = function(up) { //normally we do not buy 227, 71, 73, rolling pins
-  switch(up.id) {
-    case 71: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won && 
-	  (!Game.Achievements["Reincarnation"].won || Game.Upgrades["Arcane sugar"].bought); // brainsweep
-	case 73: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won; // elder pact
-	case 74: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Upgrades["Elder Covenant"].unlocked; // elder pledge
-	case 84: return Game.Upgrades["Elder Pledge"].bought; // elder covenant
-//	case 85: return Game.Upgrades["Elder Covenant"].bought; // revoke elder covenant 
+AutoPlay.avoidbuy = function (up) { //normally we do not buy 227, 71, 73, rolling pins
+  switch (up.id) {
+    case 71: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won &&
+      (!Game.Achievements["Reincarnation"].won || Game.Upgrades["Arcane sugar"].bought); // brainsweep
+    //case 73: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won; // elder pact
+    //	case 74: return Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Upgrades["Elder Covenant"].unlocked; // elder pledge
+    //	case 84: return Game.Upgrades["Elder Pledge"].bought; // elder covenant
+    //	case 85: return Game.Upgrades["Elder Covenant"].bought; // revoke elder covenant
+    case 73: return false; // elder pact
+    case 74: return false; // elder pledge
+    case 84: return true; // elder covenant
+    case 85: return true; // revoke elder covenant
     case 227: return true; // choco egg
-	default: return up.pool=="toggle";
-} }
+    default: return up.pool == "toggle";
+  }
+}
 
 //===================== Handle Buildings ==========================
 AutoPlay.handleBuildings = function () {
@@ -123,7 +128,7 @@ AutoPlay.handleBuildings = function () {
     var me = Game.ObjectsById[i];
     if ((me.storedCps / me.price > cpc / 2 || me.amount % 50 >= 40) && (me.getSumPrice(checkAmount) < Game.cookies)) {
       me.buy(buyAmount);
-      console.log("Bought " + me.name + " #" + me.bought)
+      console.log("Bought " + me.name + " #" + me.amount)
       return;
     }
   }
@@ -556,37 +561,37 @@ AutoPlay.unDunk = function() {
 //===================== Handle Ascend ==========================
 AutoPlay.ascendLimit = 0.9*Math.floor(2*(1-Game.ascendMeterPercent));
 
-AutoPlay.handleAscend = function() {
+AutoPlay.handleAscend = function () {
   if (Game.OnAscend) { AutoPlay.doReincarnate(); AutoPlay.findNextAchievement(); return; }
-  if (Game.ascensionMode==1 && !AutoPlay.canContinue()) AutoPlay.doAscend("reborn mode did not work, retry.",0);
+  if (Game.ascensionMode == 1 && !AutoPlay.canContinue()) AutoPlay.doAscend("reborn mode did not work, retry.", 0);
   if (AutoPlay.preNightMode()) return; //do not ascend right before the night
   if (AutoPlay.plantPending) return; // do not ascend when we wait for a plant to mature
-  var ascendDays=10;
+  var ascendDays = 10;
   if (AutoPlay.endPhase() && !Game.Achievements["Endless cycle"].won && Game.Upgrades["Sucralosia Inutilis"].bought) { // this costs 2 minutes per 2 ascend
-    if ((Game.ascendMeterLevel > 0) && ((AutoPlay.ascendLimit < Game.ascendMeterLevel*Game.ascendMeterPercent) || ((Game.prestige+Game.ascendMeterLevel)%1000==777))) 
-	{ AutoPlay.doAscend("go for 1000 ascends",0); }
+    if ((Game.ascendMeterLevel > 0) && ((AutoPlay.ascendLimit < Game.ascendMeterLevel * Game.ascendMeterPercent) || ((Game.prestige + Game.ascendMeterLevel) % 1000 == 777))) { AutoPlay.doAscend("go for 1000 ascends", 0); }
   }
   if (Game.Upgrades["Permanent upgrade slot V"].bought && !Game.Achievements["Reincarnation"].won) { // this costs 3+2 minute per 2 ascend
-    if ((Game.ascendMeterLevel > 0) && ((AutoPlay.ascendLimit < Game.ascendMeterLevel*Game.ascendMeterPercent) )) 
-	{ AutoPlay.doAscend("go for 100 ascends",0); }
+    if ((Game.ascendMeterLevel > 0) && ((AutoPlay.ascendLimit < Game.ascendMeterLevel * Game.ascendMeterPercent))) { AutoPlay.doAscend("go for 100 ascends", 0); }
   }
-  if (AutoPlay.endPhase() && (Date.now()-Game.startDate) > ascendDays*24*60*60*1000) {
-    AutoPlay.doAscend("ascend after " + ascendDays + " days just while waiting for next achievement.",1);
+  if (AutoPlay.endPhase() && (Date.now() - Game.startDate) > ascendDays * 24 * 60 * 60 * 1000) {
+    AutoPlay.doAscend("ascend after " + ascendDays + " days just while waiting for next achievement.", 1);
   }
-  var newPrestige=(Game.prestige+Game.ascendMeterLevel)%1000000;
-  if (AutoPlay.endPhase() && !Game.Upgrades["Lucky digit"].bought && Game.ascendMeterLevel>0 && ((Game.prestige+Game.ascendMeterLevel)%10 == 7)) { AutoPlay.doAscend("ascend for lucky digit.",0); }
-  if (AutoPlay.endPhase() && !Game.Upgrades["Lucky number"].bought && Game.ascendMeterLevel>0 && ((Game.prestige+Game.ascendMeterLevel)%1000 == 777)) { AutoPlay.doAscend("ascend for lucky number.",0); }
-  if (!Game.Upgrades["Lucky payout"].bought && Game.ascendMeterLevel>0 && AutoPlay.endPhase() && (Game.heavenlyChips > 77777777) && (newPrestige <= 777777) && (newPrestige >= 777777-Game.ascendMeterLevel)) {
-    AutoPlay.doAscend("ascend for lucky payout.",0);
+  var newPrestige = (Game.prestige + Game.ascendMeterLevel) % 1000000;
+  console.log("newPrestige", newPrestige)
+  if (!Game.Upgrades["Lucky digit"].bought && Game.ascendMeterLevel > 0 && (Game.heavenlyChips > 777) && ((Game.prestige + Game.ascendMeterLevel) % 10 == 7)) { AutoPlay.doAscend("ascend for lucky digit.", 0); }
+  if (!Game.Upgrades["Lucky number"].bought && Game.ascendMeterLevel > 0  && (Game.heavenlyChips > 77777) && ((Game.prestige + Game.ascendMeterLevel) % 1000 == 777)) { AutoPlay.doAscend("ascend for lucky number.", 0); }
+  if (!Game.Upgrades["Lucky payout"].bought && Game.ascendMeterLevel > 0 && (Game.heavenlyChips > 77777777) && (newPrestige <= 777777) && (newPrestige >= 777777 - Game.ascendMeterLevel)) {
+    AutoPlay.doAscend("ascend for lucky payout.", 0);
   }
   if (Game.AchievementsById[AutoPlay.nextAchievement].won) {
-	var date=new Date();
-	date.setTime(Date.now()-Game.startDate);
-	var legacyTime=Game.sayTime(date.getTime()/1000*Game.fps,-1);
-	date.setTime(Date.now()-Game.fullDate);
-	var fullTime=Game.sayTime(date.getTime()/1000*Game.fps,-1);
-    AutoPlay.doAscend("have achievement: " + Game.AchievementsById[AutoPlay.nextAchievement].desc + " after " + legacyTime + "(total: " + fullTime + ")",1);
-} }
+    var date = new Date();
+    date.setTime(Date.now() - Game.startDate);
+    var legacyTime = Game.sayTime(date.getTime() / 1000 * Game.fps, -1);
+    date.setTime(Date.now() - Game.fullDate);
+    var fullTime = Game.sayTime(date.getTime() / 1000 * Game.fps, -1);
+    AutoPlay.doAscend("have achievement: " + Game.AchievementsById[AutoPlay.nextAchievement].desc + " after " + legacyTime + "(total: " + fullTime + ")", 1);
+  }
+}
 
 AutoPlay.canContinue = function() {
   if (!Game.Achievements["Neverclick"].won && Game.cookieClicks<=15) return true;
@@ -720,16 +725,23 @@ AutoPlay.buyHeavenlyUpgrades = function() {
   } else { //collect rare things
     AutoPlay.assignPermanentSlot(0,AutoPlay.butterBiscuits);
     AutoPlay.assignPermanentSlot(3,[226]); // omelette
-	if(Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won)
-      AutoPlay.assignPermanentSlot(4,[72]); // arcane sugar
-	else AutoPlay.assignPermanentSlot(4,[53]); // serendipity
+//    if (Game.Achievements["Elder nap"].won && Game.Achievements["Elder slumber"].won && Game.Achievements["Elder calm"].won)
+//      AutoPlay.assignPermanentSlot(4, [72]); // arcane sugar
+//    else
+
+AutoPlay.assignPermanentSlot(4, [53]); // serendipity
   }
 }
 
 AutoPlay.assignPermanentSlot = function(slot,options) {
   if (!Game.UpgradesById[264+slot].bought) return;
   Game.AssignPermanentSlot(slot); 
-  for (var i=options.length-1; i>=0; i--) { if(Game.UpgradesById[options[i]].bought) { Game.PutUpgradeInPermanentSlot(options[i],slot); break; } }
+  for (var i = options.length - 1; i >= 0; i--) {
+    if (Game.UpgradesById[options[i]].bought) {
+      console.log("Assigning " + options[i] + " to slot " + slot);
+      Game.PutUpgradeInPermanentSlot(options[i], slot); break;
+    }
+  }
   Game.ConfirmPrompt();
 }
 
