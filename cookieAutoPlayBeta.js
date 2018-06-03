@@ -85,10 +85,10 @@ AutoPlay.handleGoldenCookies = function() { // pop the first golden cookie or re
 } }
 
 AutoPlay.handleClicking = function() {
-  if (!Game.Achievements["Neverclick"].won && (Game.cookieClicks<=15) ) { AutoPlay.addActivity('Waiting for neverclick.'); return; }
-  if (Game.ascensionMode==1 && AutoPlay.endPhase() && !Game.Achievements["True Neverclick"].won && (!Game.cookieClicks) ) { AutoPlay.addActivity('Waiting for true neverclick.'); return; }
-  if(!Game.Achievements["Uncanny clicker"].won) { for(i=1; i<6; i++) setTimeout(Game.ClickCookie, 50*i); }
-  if (Game.ascensionMode==1 && Game.Achievements["Hardcore"].won) setTimeout(Game.ClickCookie, 150);
+  //if (!Game.Achievements["Neverclick"].won && (Game.cookieClicks<=15) ) { AutoPlay.addActivity('Waiting for neverclick.'); return; }
+  //if (Game.ascensionMode==1 && AutoPlay.endPhase() && !Game.Achievements["True Neverclick"].won && (!Game.cookieClicks) ) { AutoPlay.addActivity('Waiting for true neverclick.'); return; }
+  //if(!Game.Achievements["Uncanny clicker"].won) { for(i=1; i<6; i++) setTimeout(Game.ClickCookie, 50*i); }
+  //if (Game.ascensionMode==1 && Game.Achievements["Hardcore"].won) setTimeout(Game.ClickCookie, 150);
   Game.ClickCookie();
 }
 
@@ -577,7 +577,6 @@ AutoPlay.handleAscend = function () {
     AutoPlay.doAscend("ascend after " + ascendDays + " days just while waiting for next achievement.", 1);
   }
   var newPrestige = (Game.prestige + Game.ascendMeterLevel) % 1000000;
-  console.log("newPrestige", newPrestige)
   if (!Game.Upgrades["Lucky digit"].bought && Game.ascendMeterLevel > 0 && (Game.heavenlyChips > 777) && ((Game.prestige + Game.ascendMeterLevel) % 10 == 7)) { AutoPlay.doAscend("ascend for lucky digit.", 0); }
   if (!Game.Upgrades["Lucky number"].bought && Game.ascendMeterLevel > 0  && (Game.heavenlyChips > 77777) && ((Game.prestige + Game.ascendMeterLevel) % 1000 == 777)) { AutoPlay.doAscend("ascend for lucky number.", 0); }
   if (!Game.Upgrades["Lucky payout"].bought && Game.ascendMeterLevel > 0 && (Game.heavenlyChips > 77777777) && (newPrestige <= 777777) && (newPrestige >= 777777 - Game.ascendMeterLevel)) {
