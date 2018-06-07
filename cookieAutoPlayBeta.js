@@ -10,6 +10,8 @@ AutoPlay.delay=0;
 AutoPlay.night=false;
 AutoPlay.finished=false;
 
+AutoPlay.popping = false;
+
 AutoPlay.pauseBuildings = false;
 AutoPlay.pauseUpgrades = false;
 AutoPlay.disableNightMode = true;
@@ -24,12 +26,12 @@ AutoPlay.run = function () {
   if (AutoPlay.nightMode()) { var age = Date.now() - Game.lumpT; AutoPlay.cheatSugarLumps(age); return; }
   //AutoPlay.handleClicking();
   AutoPlay.handleGoldenCookies();
+  AutoPlay.handleWrinklers();
   if (!AutoPlay.pauseUpgrades) { AutoPlay.handleUpgrades();  } else { AutoPlay.addActivity("Upgrades disabled"); }
   if (!AutoPlay.pauseBuildings) { AutoPlay.handleBuildings(); } else { AutoPlay.addActivity("Buildings disabled"); }
   AutoPlay.handleSeasons();
   AutoPlay.handleSugarLumps();
   AutoPlay.handleDragon();
-  AutoPlay.handleWrinklers();
   AutoPlay.handleAscend();
   AutoPlay.handleNotes();
 }
@@ -107,7 +109,7 @@ AutoPlay.avoidbuy = function (up) { //normally we do not buy 227, 71, 73, rollin
     //	case 84: return Game.Upgrades["Elder Pledge"].bought; // elder covenant
     //	case 85: return Game.Upgrades["Elder Covenant"].bought; // revoke elder covenant
     case 73: return false; // elder pact
-    case 74: return false; // elder pledge
+    case 74: return AutoPlay.popping; // elder pledge
     case 84: return true; // elder covenant
     case 85: return true; // revoke elder covenant
     case 227: return true; // choco egg
@@ -532,6 +534,7 @@ AutoPlay.handleWrinklers = function() {
   doPop = doPop || (AutoPlay.endPhase() && !Game.Achievements["Last Chance to See"].won);
   if (doPop) AutoPlay.addActivity("Popping wrinklers for droppings and/or achievements.");
   if (doPop) Game.wrinklers.forEach(function(w) { if (w.close==1) w.hp = 0; } );
+  AutoPlay.popping = doPop;
 }
 
 //===================== Handle Small Achievements ==========================
